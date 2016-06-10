@@ -1,0 +1,19 @@
+{
+  "name": "iot-mailbox",
+  "description": "AWS IoT Connected Smart Mailbox",
+  "version": "0.0.1",
+  "author": {
+     "name":"Vanja Divkovic",
+     "email":""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tornyak/iot-mailbox.git"
+  },
+  "main": "iot-mailbox.js",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "aws-iot-device-sdk": ">=1.0.12",
+    "minimist": "1.2.0"
+  }
+}
