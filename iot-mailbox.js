@@ -37,7 +37,9 @@ function run(args) {
    });
 
    thing.runThing(thingShadows)
-   sensor.runSensor(function() {
+   console.log("testMode: " + args.testMode);
+
+   function sendNotification(){
      var msg = JSON.stringify({
        thingName: thing.thingName,
        serialNumber: 12345,
@@ -45,7 +47,14 @@ function run(args) {
      });
      console.log("New mail notificaton sent: " + msg);
      thingShadows.publish(newMailTopic, msg);
-   });
+   }
+
+   // testMode 2 is using sensor
+   if (args.testMode === 2) {
+     sensor.runSensor(sendNotification);
+   } else {
+     setTimeout(sendNotification, 5000);
+   }
 } // end run
 
 module.exports = cmdLineProcess;

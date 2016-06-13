@@ -1,4 +1,5 @@
 const thingShadow = require('aws-iot-device-sdk').thingShadow;
+const os = require('os');
 
 const thingName = 'MailboxPi';  // same as created in AWS IoT Console
 
@@ -40,12 +41,28 @@ function runThing(thingShadows) {
        }
     }
 
+    function getState() {
+      return {
+        state: {
+            desired: {
+              thingName: thingName,
+              hostName: os.hostname(),
+              avgLoad: os.loadavg(),
+              uptime: os.uptime(),
+              freemem: os.freemem(),
+              netInterfaces: os.networkInterfaces()
+            }
+         }
+      }
+
+    }
+
     function register() {
        thingShadows.register(thingName, {
           ignoreDeltas: true,
           operationTimeout: operationTimeout
        });
-       // TODO: genericOperation('update', sendState());
+       genericOperation('update', getState());
     }
 
     function handleStatus(thingName, stat, clientToken, stateObject) {
@@ -59,13 +76,13 @@ function runThing(thingShadows) {
 
         console.log('updated state to thing shadow');
         //
-        // If no other operation is pending, restart it after 10 seconds.
+        // If no other operation is pending, restart it after 60 seconds.
         //
         if (currentTimeout === null) {
            currentTimeout = setTimeout(function() {
               currentTimeout = null;
-              genericOperation('update', generateRandomState());
-           }, 10000);
+              genericOperation('update', getState());
+           }, 60000);
         }
     }
 
@@ -82,7 +99,7 @@ function runThing(thingShadows) {
           console.log('(timeout) client token mismtach on: ' + thingName);
        }
 
-       genericOperation('update', generateRandomState());
+       genericOperation('update', getState());
     }
 
     // Register shadow callbacks
