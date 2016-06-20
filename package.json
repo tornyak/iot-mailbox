@@ -14,6 +14,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "aws-iot-device-sdk": ">=1.0.12",
-    "minimist": "1.2.0"
+    "minimist": "1.2.0",
+    "johnny-five": "0.9.57 ",
+    "raspi-io": "6.0.1"
   }
 }
