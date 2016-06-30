@@ -16,6 +16,9 @@ const thing = require('./thing');
 const sensor = require('./sensor');
 
 const newMailTopic = 'mailboxpi/newmail';
+const shadowUpdateTmo = 60 * 1000 // Update every minute
+const rebootTmo = 60 * shadowUpdateTmo; // Reboot timer if no AWS connection
+const serialNumber = 12345;
 
 //begin module
 function run(args) {
@@ -42,7 +45,7 @@ function run(args) {
     function sendNotification() {
         var msg = JSON.stringify({
             thingName: args.thingName,
-            serialNumber: 12345,
+            serialNumber: serialNumber,
             newMailAt: new Date().getTime()
         });
         console.log("New mail notificaton sent: " + msg);
