@@ -1,7 +1,7 @@
 const thingShadow = require('aws-iot-device-sdk').thingShadow;
 const os = require('os');
 
-function runThing(thingShadows, thingName) {
+function runThing(thingShadows, thingName, gpioController) {
     const operationTimeout = 10000; // ms
     var currentTimeout = null;
 
@@ -50,7 +50,10 @@ function runThing(thingShadows, thingName) {
                     avgLoad: os.loadavg(),
                     uptime: os.uptime(),
                     freemem: os.freemem(),
-                    netInterfaces: os.networkInterfaces()
+                    wlan: os.networkInterfaces()["wlan0"],
+                    mailInMailbox: gpioController.isMailInMailbox(),
+                    statusLED: gpioController.getStatusLEDState(),
+                    mailLED: gpioController.getMailLEDState()
                 }
             }
         }
@@ -75,6 +78,7 @@ function runThing(thingShadows, thingName) {
         }
 
         console.log('updated state to thing shadow');
+        gpioController.setStatusLEDColor("#00ff00");
         //
         // If no other operation is pending, restart it after 60 seconds.
         //
@@ -88,6 +92,7 @@ function runThing(thingShadows, thingName) {
 
     function handleDelta(thingName, stateObject) {
         console.log('unexpected delta: ' + thingName);
+        gpioController.setStatusLEDColor("#0000ff");
     }
 
     function handleTimeout(thingName, clientToken) {
@@ -98,6 +103,7 @@ function runThing(thingShadows, thingName) {
         } else {
             console.log('(timeout) client token mismtach on: ' + thingName);
         }
+        gpioController.setStatusLEDColor("#0000ff");
 
         genericOperation('update', getState());
     }
@@ -105,16 +111,19 @@ function runThing(thingShadows, thingName) {
     // Register shadow callbacks
     thingShadows.on('connect', function() {
         console.log('connected to AWS IoT');
+        gpioController.setStatusLEDColor("#0000ff");
         register();
     });
 
     thingShadows.on('close', function() {
         console.log('close');
+        gpioController.setStatusLEDColor("#ff0000");
         thingShadows.unregister(thingName);
     });
 
     thingShadows.on('reconnect', function() {
         console.log('reconnect');
+        gpioController.setStatusLEDColor("#0000ff");
     });
 
     thingShadows.on('offline', function() {
@@ -132,26 +141,32 @@ function runThing(thingShadows, thingName) {
             tokenStack.pop();
         }
         console.log('offline');
+        gpioController.setStatusLEDColor("#ff0000");
     });
 
     thingShadows.on('error', function(error) {
         console.log('error', error);
+        gpioController.setStatusLEDColor("#ff0000");
     });
 
     thingShadows.on('message', function(topic, payload) {
         console.log('message', topic, payload.toString());
+        gpioController.setStatusLEDColor("#00ff00");
     });
 
     thingShadows.on('status', function(thingName, stat, clientToken, stateObject) {
         handleStatus(thingName, stat, clientToken, stateObject);
+        gpioController.setStatusLEDColor("#00ff00");
     });
 
     thingShadows.on('delta', function(thingName, stateObject) {
         handleDelta(thingName, stateObject);
+        gpioController.setStatusLEDColor("#00ff00");
     });
 
     thingShadows.on('timeout', function(thingName, clientToken) {
         handleTimeout(thingName, clientToken);
+        gpioController.setStatusLEDColor("#0000ff");
     });
 }
 

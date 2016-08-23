@@ -15,7 +15,6 @@ const cmdLineProcess = require('./lib/cmdline');
 const thing = require('./thing');
 const sensor = require('./sensor');
 
-const newMailTopic = 'mailboxpi/newmail';
 const shadowUpdateTmo = 60 * 1000 // Update every minute
 const rebootTmo = 60 * shadowUpdateTmo; // Reboot timer if no AWS connection
 const serialNumber = 12345;
@@ -39,22 +38,14 @@ function run(args) {
         debug: args.Debug
     });
 
-    thing.runThing(thingShadows, args.thingName)
-    console.log("Run thingName: " + args.thingName + " testMode: " + args.testMode);
-
-    function sendNotification() {
-        var msg = JSON.stringify({
-            thingName: args.thingName,
-            serialNumber: serialNumber,
-            newMailAt: new Date().getTime()
-        });
-        console.log("New mail notificaton sent: " + msg);
-        thingShadows.publish(newMailTopic, msg);
-    }
-
     // testMode 2 is using sensor
     if (args.testMode === 2) {
-        sensor.runSensor(sendNotification);
+        gpioController = new sensor.PiGPIOController(function(){
+          // connect to AWS
+          thing.runThing(thingShadows, args.thingName, gpioController)
+          console.log("Run thingName: " + args.thingName + " testMode: " + args.testMode);
+          gpioController.runNewMailSensor();
+        });
     } else {
         setTimeout(sendNotification, 5000);
     }
